@@ -62,4 +62,4 @@ class MainConfig:
         with open(main_config_abspath, 'w', encoding='utf-8') as f:
             f.write('')
         self.main_config = None
-        self.add_section(userconfig)
+        self.add_section(rootconfig)
