@@ -50,11 +50,6 @@ def login(parent_window, click_object):
         pyperclip.copy(click_object['password'][1])
         time.sleep(2)
         pyautogui.hotkey('ctrl', 'v')
-        # 粘贴完复制其他内容,防止密码泄漏
-        time.sleep(1)
-        pyperclip.copy('autoClick_XingC')
-        time.sleep(1)
-        pyautogui.hotkey('ctrl', 'v')
         time.sleep(2)
     # 点击登录按钮
     if click_object['login_x'][1] != '' and click_object['login_y'][1] != '':
@@ -62,6 +57,10 @@ def login(parent_window, click_object):
         pyautogui.click(str_to_int(click_object['login_x'][1]), str_to_int(click_object['login_y'][1]))
 
     # 所有语句执行完毕
+    # 粘贴完复制其他内容,防止密码泄漏
+    time.sleep(1)
+    pyperclip.copy('autoClick_XingC')
+    time.sleep(1)
     global is_worked
     is_worked = True
 
