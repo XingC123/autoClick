@@ -182,9 +182,11 @@ class MainApp:
         Label(self.auto_click_blank_frame, text='X').pack(side=LEFT)
         self.auto_click_blank_x_entry = Entry(self.auto_click_blank_frame, width=10)
         self.auto_click_blank_x_entry.pack(side=LEFT)
+        self.auto_click_blank_x_entry.insert(0, '10')
         Label(self.auto_click_blank_frame, text='Y').pack(side=LEFT)
         self.auto_click_blank_y_entry = Entry(self.auto_click_blank_frame, width=10)
         self.auto_click_blank_y_entry.pack(side=LEFT)
+        self.auto_click_blank_y_entry.insert(0, '400')
         # 程序启动后定时执行 #
         auto_start_after_boot_frame = Frame(self.extent_config_frame)
         auto_start_after_boot_frame.pack(side=TOP)
@@ -332,7 +334,7 @@ class MainApp:
     def load_config(self, if_popup_window=True):
         # 配置文件重载
         self.main_config.read_config()
-        if len(self.main_config.main_config.items(userconfig)) == 0:
+        if len(self.main_config.main_config.items(rootconfig)) == 0:
             if if_popup_window:
                 custom_messagebox.CustomMessagebox(self.main_window, '加载配置', 300, 200, ['配置为空'])
         else:

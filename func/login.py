@@ -21,7 +21,7 @@ def login(parent_window, click_object):
                 else:
                     time.sleep(2)
 
-        custom_messagebox.CustomMessagebox(parent_window, '正在执行任务', 300, 200, ['正在执行任务...'], True, recv, False)
+        custom_messagebox.CustomMessagebox(parent_window, '正在执行任务', 300, 200, ['正在执行任务...'], True, recv, True)
 
     stop_with_main_thread.StopWithMainThread(tip_window).run()
 

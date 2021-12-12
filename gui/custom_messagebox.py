@@ -31,7 +31,7 @@ class CustomMessagebox:
         self.msg_window.resizable(False, False)
         # 字体
         # self.ft = Font(size=CustomMessagebox.Message_font)
-        self.ft = environment.custom_constant.custom_constant.CustomFont().microsoft_yahei
+        self.ft = environment.custom_constant.custom_constant.CustomFont().microsoft_yahei_10
 
         def main_content():
             # 列表内元素最后将处于不同行,请合理安排内容

@@ -31,15 +31,15 @@ class MainConfig:
             self.main_config.read(main_config_abspath, encoding='utf-8')
             if len(self.get_sections()) != 0:
                 return True
-            else:
-                return False
+        else:
+            return False
 
     def add_section(self, section):
         if self.main_config is None:
             self.main_config = configparser.ConfigParser()
         if self.main_config.has_section(section) is False:
             self.main_config.add_section(section)
-            self.main_config.write(open(main_config_abspath, 'r+', encoding='utf-8'))
+            self.main_config.write(open(main_config_abspath, 'w+', encoding='utf-8'))
             return True
         return False
 
@@ -47,7 +47,7 @@ class MainConfig:
         if not self.main_config.has_section(section):
             self.main_config.add_section(section)
         self.main_config.set(section, key, str(value))
-        self.main_config.write(open(main_config_abspath, 'r+', encoding='utf-8'))
+        self.main_config.write(open(main_config_abspath, 'w+', encoding='utf-8'))
 
     def get_value(self, section, key):
         if self.main_config.has_option(section, key):
