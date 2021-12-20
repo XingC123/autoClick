@@ -1,14 +1,13 @@
-import threading
-import time
 import webbrowser
 from tkinter import *
 
-import environment.config.main_config
-import func.login
+import gui.app_info
+# 自定义gui方法
 import gui.custom_messagebox as custom_messagebox
 import gui.get_xy_window
+# 自定义lib方法
 import lib.necessary_lib as necessary_lib
-import lib.stop_with_main_thread as stop_with_main_thread
+# 自定义环境
 from environment.custom_constant.custom_constant import *
 
 # 常用变量
@@ -35,9 +34,12 @@ def set_config_from_dic(dic):
 
 
 class MainApp:
-    def __init__(self, main_app_execute_path):
-        # 创建配置文件
-        self.main_config = environment.config.main_config.MainConfig(main_app_execute_path)
+    def __init__(self, parent_window, click_object, work_mode):
+        # 父窗口的操作
+        self.parent_window = parent_window
+        self.parent_window.attributes('-disable', True)
+        # 工作模式
+        self.work_mode = work_mode
         # 用来存放所有信息的自定义对象
         # 在init函数末尾赋初值
         self.click_object = None
@@ -46,7 +48,7 @@ class MainApp:
         # 多选框状态
         self.check_dic = None
         # 创建主窗口
-        self.main_window = Tk()
+        self.main_window = Toplevel()
         necessary_lib.fit_screen_zoom(self.main_window)
         self.main_window.title('自动点击登录')
         self.main_window.geometry(necessary_lib.middle_screen(self.main_window, width_root_window, height_root_window))
@@ -167,8 +169,6 @@ class MainApp:
         self.auto_click_blank_frame = Frame(self.extent_config_frame)
         self.auto_click_blank_frame.pack(side=TOP)
         self.auto_click_blank_value = BooleanVar()
-        # 默认状态 #
-        self.auto_click_blank_value.set(True)
 
         def check_state_auto_click_blank():
             self.check_state(self.auto_click_blank_value,
@@ -182,11 +182,9 @@ class MainApp:
         Label(self.auto_click_blank_frame, text='X').pack(side=LEFT)
         self.auto_click_blank_x_entry = Entry(self.auto_click_blank_frame, width=10)
         self.auto_click_blank_x_entry.pack(side=LEFT)
-        self.auto_click_blank_x_entry.insert(0, '10')
         Label(self.auto_click_blank_frame, text='Y').pack(side=LEFT)
         self.auto_click_blank_y_entry = Entry(self.auto_click_blank_frame, width=10)
         self.auto_click_blank_y_entry.pack(side=LEFT)
-        self.auto_click_blank_y_entry.insert(0, '400')
         # 程序启动后定时执行 #
         auto_start_after_boot_frame = Frame(self.extent_config_frame)
         auto_start_after_boot_frame.pack(side=TOP)
@@ -209,59 +207,8 @@ class MainApp:
         #         self.auto_start_after_boot_value.set(False)
         #
         # stop_with_main_thread.StopWithMainThread(load_root_config).run()
-        # 配置保存与加载
-        self.config_frame = Frame(self.main_frame)
-        self.config_frame.pack(ipady=10)
-
-        Button(self.config_frame, text='加载配置', command=self.load_config).pack(side=LEFT)
-
-        def save_config():
-            if self.get_input():
-                self.get_input_root()
-
-                def save():
-                    for i in self.root_config:
-                        self.main_config.set_value(rootconfig, i, self.root_config[i][1])
-                    for i in self.click_object:
-                        self.main_config.set_value(userconfig, i, self.click_object[i][1])
-                    custom_messagebox.CustomMessagebox(self.main_window, '保存配置', 300, 200, ['保存成功'])
-
-                stop_with_main_thread.StopWithMainThread(save).run()
-
-        Button(self.config_frame, text='保存配置', command=save_config).pack(side=LEFT)
-
-        def clear_input_config():
-            self.make_input_empty()
-
-        Button(self.config_frame, text='清空已输入配置', command=clear_input_config).pack(side=LEFT)
-
-        def clear_local_config():
-            self.main_config.clear()
-
-        Button(self.config_frame, text='清空本地配置', command=clear_local_config).pack(side=LEFT)
-
-        # 功能按钮
-        self.work_button_frame = Frame(self.main_window, width=width_root_window, height=50)
-        self.work_button_frame.pack_propagate(False)
-        self.work_button_frame.pack(side=BOTTOM)
-
-        def work_start():
-            # 新建线程来操作
-            stop_with_main_thread.StopWithMainThread(self.login_work()).run()
-
-        Button(self.work_button_frame, text='登录', command=work_start).pack(side=RIGHT, padx=10)
 
         # 界面渲染完成后的初始化方法
-        self.init_checkbutton_state()
-        self.init_root_config()
-        self.init_click_object()
-        self.check_state_all()
-
-        def load_root_config():
-            if self.load_root_config_boot() is False:
-                self.auto_start_after_boot_value.set(False)
-
-        stop_with_main_thread.StopWithMainThread(load_root_config).run()
 
         # 窗口其他必要属性
         self.main_window.config(menu=self.menubar)
@@ -272,13 +219,9 @@ class MainApp:
     def set_main_window_menu(self):
         info_menu = Menu(self.menubar, tearoff=0)
 
-        def info_app_info_menu():
-            width = 500
-            height = 200
-            msg_list = ['软件名: 自动点击登录', '作者: XingC', '邮箱: 123fengmo@gmail.com', '声明: 仅做学习交流之用,因其他用法造成的一切问题本人概不负责']
-            custom_messagebox.CustomMessagebox(self.main_window, '关于软件', width, height, msg_list)
-
-        info_menu.add_command(label='关于软件', command=info_app_info_menu)
+        def app_info():
+            gui.app_info.info_app_info_menu(self.main_window)
+        info_menu.add_command(label='关于软件', command=app_info)
 
         def help_info_menu():
             width = 500
@@ -320,106 +263,8 @@ class MainApp:
             self.check_dic[i][0].set(value)
 
     def close_window(self):
-        # 自定义的关闭主窗口时执行的方法
-        all_threads = threading.enumerate()
-        for i in all_threads:
-            stop_with_main_thread.stop_thread(i)
+        if self.work_mode == 'modify' or self.work_mode == 'add':
+            pass
+        self.parent_window.attributes('-disable', False)
         self.main_window.destroy()
 
-    # 执行的任务域
-    def login_work(self):
-        if self.get_input():
-            func.login.login(self.main_window, self.click_object)
-
-    def load_config(self, if_popup_window=True):
-        # 配置文件重载
-        self.main_config.read_config()
-        if len(self.main_config.main_config.items(rootconfig)) == 0:
-            if if_popup_window:
-                custom_messagebox.CustomMessagebox(self.main_window, '加载配置', 300, 200, ['配置为空'])
-        else:
-            def load():
-                # 先将所有具有"通过复选框状态控制其他组件是否可用"特性的复选框对应值为 True
-                self.set_all_checkbutton_state(True)
-                # 根配置
-                self.init_root_config()
-                for i in self.root_config:
-                    replace_entry_value(self.root_config[i][0], self.main_config.get_value(rootconfig, i))
-                # self.click_object对象赋值
-                self.init_click_object()
-                for i in self.click_object:
-                    replace_entry_value(self.click_object[i][0], self.main_config.get_value(userconfig, i))
-                self.check_state_all()
-                if if_popup_window:
-                    custom_messagebox.CustomMessagebox(self.main_window, '加载配置', 300, 200, ['加载成功'])
-
-            load()
-
-    def init_click_object(self):
-        # 为 self.click_object 对象赋初值
-        self.click_object = {'web_path': [self.web_path, ''],
-                             'account_x': [self.positionX_account_entry, ''],
-                             'account_y': [self.positionY_account_entry, ''],
-                             'password_x': [self.positionX_password_entry, ''],
-                             'password_y': [self.positionY_password_entry, ''],
-                             'account': [self.account_entry, ''],
-                             'password': [self.password_entry, ''],
-                             'login_x': [self.positionX_login_entry, ''],
-                             'login_y': [self.positionY_login_entry, ''],
-                             'auto_click_blank': [self.auto_click_blank_value, True],
-                             'auto_click_blank_x': [self.auto_click_blank_x_entry, '10'],
-                             'auto_click_blank_y': [self.auto_click_blank_y_entry, '400']
-                             }
-
-    def get_input(self):
-        # 为click_object赋值(将数据读入亦或是初始化此对象)
-        if self.click_object['web_path'][0].get() == '':
-            custom_messagebox.CustomMessagebox(self.main_window, '错误', 300, 200, ['网址不能为空'])
-            return False
-        else:
-            set_config_from_dic(self.click_object)
-            return True
-
-    def make_input_empty(self):
-        def make_empty():
-            self.init_click_object()
-            self.init_root_config()
-            # 将root_config置空
-            for i in self.root_config:
-                replace_entry_value(self.root_config[i][0], self.root_config[i][1])
-            # 将click_object置空
-            for i in self.click_object:
-                replace_entry_value(self.click_object[i][0], self.click_object[i][1])
-
-        stop_with_main_thread.StopWithMainThread(make_empty).run()
-
-    def init_root_config(self):
-        self.root_config = {'auto_start_after_boot_value': [self.auto_start_after_boot_value, False],
-                            'auto_start_after_boot_delay': [self.auto_start_after_boot_entry, '']
-                            }
-
-    def get_input_root(self):
-        set_config_from_dic(self.root_config)
-
-    def load_root_config_boot(self):
-        self.init_root_config()
-        if self.main_config.get_value(rootconfig, 'auto_start_after_boot_value') == 'True':
-            delay = self.main_config.get_value(rootconfig, 'auto_start_after_boot_delay')
-            if delay.isdigit():
-                def boot():
-                    time.sleep(int(delay))
-                    self.load_config(False)
-                    self.login_work()
-
-                # def boot():
-                #     time.sleep(5)
-                #     print('这是方法体内容')
-
-                def boot_main():
-                    custom_messagebox.CustomMessagebox(
-                        self.main_window, '开机任务', 300, 200,
-                        ['检测到开启自动操作的配置文件', '将在 ' + delay + ' 后自动执行'], False, boot, True)
-
-                stop_with_main_thread.StopWithMainThread(boot_main).run()
-                return True
-        return False

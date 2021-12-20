@@ -18,8 +18,8 @@ class MainConfig:
         self.config_path = main_config_abspath
         self.main_config = None
         if self.read_config() is False or len(self.get_sections()) == 0:
-            # self.add_section(userconfig)
-            self.add_section(rootconfig)
+            # self.add_section(rootconfig)
+            self.set_value(rootconfig, startwithboot, '')
 
         # 程序运行重要配置
         self.root_config = None

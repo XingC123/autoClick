@@ -1,5 +1,4 @@
 from tkinter import *
-from tkinter.font import Font
 
 import lib.necessary_lib as necessary_lib
 import lib.stop_with_main_thread as stop_with_main_thread
@@ -30,7 +29,6 @@ class CustomMessagebox:
         self.msg_window.geometry(geometry)
         self.msg_window.resizable(False, False)
         # 字体
-        # self.ft = Font(size=CustomMessagebox.Message_font)
         self.ft = environment.custom_constant.custom_constant.CustomFont().microsoft_yahei_10
 
         def main_content():

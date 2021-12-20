@@ -1,7 +1,7 @@
-# 重要配置
 from tkinter.font import Font
-
+# 重要配置
 rootconfig = 'rootconfig'
+startwithboot = 'startwithboot'
 
 # 文件中部分section名称
 userconfig = 'userconfig'
