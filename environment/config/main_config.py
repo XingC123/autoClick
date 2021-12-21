@@ -19,10 +19,9 @@ class MainConfig:
         self.main_config = None
         self.sections = None
         if self.read_config() is False:
-            # self.add_section(rootconfig)
-            # if self.main_config is None:
-            #     self.main_config = configparser.ConfigParser()
+            self.main_config = configparser.ConfigParser()
             self.set_value(rootconfig, startwithboot, '')
+            self.sections = self.get_sections()
 
         # 程序运行重要配置
         self.root_config = None
