@@ -3,9 +3,10 @@ from tkinter import *
 
 # 自定义环境
 import environment.config.main_config
-import gui.app_info
+from environment.custom_constant import custom_constant
 # 自定义gui方法
-import gui.main_window
+import gui.app_info
+import gui.config_editer
 # 自定义lib方法
 import lib.necessary_lib as necessary_lib
 import lib.runNeedLib as runNeedLib
@@ -18,10 +19,12 @@ height_root_window = 400
 class MainStateWindow:
     def __init__(self):
         # 创建配置文件
-        self.main_config = environment.config.main_config.MainConfig(runNeedLib.getCurRunPath(__file__))
+        self.root_config = environment.config.main_config.MainConfig(runNeedLib.getCurRunPath(__file__))
 
         # 一些变量的声明
         self.click_object = None
+        self.all_config_dic = None
+        self.auto_execute = None
 
         # 主窗口
         self.main_state_window = Tk()
@@ -50,24 +53,31 @@ class MainStateWindow:
         self.left_buttons_frame.pack(side=LEFT)
 
         def show_select_config():
-            gui.main_window.MainApp(self.main_state_window, self.click_object, 'show')
+            gui.config_editer.ConfigEditer(self.main_state_window, self.click_object, 'show')
+
         Button(self.left_buttons_frame, text='查看', command=show_select_config).pack(side=TOP, anchor=E)
         Button(self.left_buttons_frame, text='暂停').pack(side=TOP, anchor=E)
 
         def modify_select_config():
-            gui.main_window.MainApp(self.main_state_window, self.click_object, 'modify')
+            gui.config_editer.ConfigEditer(self.main_state_window, self.click_object, 'modify')
+
         Button(self.left_buttons_frame, text='修改', command=modify_select_config).pack(side=TOP, anchor=E)
         Button(self.left_buttons_frame, text='保存所有修改').pack(side=TOP, anchor=E)
         # 下级2
-        self.show_work_frame = Frame(self.func_frame, width=300, height=150, bd=1, relief=GROOVE)
+        self.show_work_frame = Frame(self.func_frame, width=300, height=150)
         self.show_work_frame.pack_propagate(False)
         self.show_work_frame.pack(side=LEFT)
+        self.show_work_frame.update()
+        self.all_config_listbox = Listbox(self.show_work_frame,
+                                          width=self.show_work_frame.winfo_screenwidth(),
+                                          height=self.show_work_frame.winfo_height())
+        self.all_config_listbox.pack()
         # 下级3
         self.right_buttons_frame = Frame(self.func_frame)
         self.right_buttons_frame.pack(side=LEFT)
 
         def add_config():
-            gui.main_window.MainApp(self.main_state_window, self.click_object, 'add')
+            gui.config_editer.ConfigEditer(self.main_state_window, self.click_object, 'add')
 
         Button(self.right_buttons_frame, text='+', width=2, command=add_config).pack(side=TOP, anchor=W)
 
@@ -86,6 +96,8 @@ class MainStateWindow:
 
         Button(self.work_frame, text='立即执行全部任务', command=do_all_works_now).pack()
 
+        # 控件初始化完成后的方法
+        self.custom_init()
         # 窗口其他必要属性
         self.main_state_window.config(menu=self.menubar)
         self.main_state_window.protocol('WM_DELETE_WINDOW', lambda: self.close_window())
@@ -112,6 +124,46 @@ class MainStateWindow:
     # 一些变量的初始化方法
     def init_click_object(self):
         self.click_object = {}
+
+    # 窗口控件初始化后任务
+    def custom_init(self):
+        # 加载本地配置
+        self.load_root_config('boot')
+        # 检查是否有任务需要自动执行
+        self.check_auto_execute()
+
+    def check_auto_execute(self):
+        # 检查是否有任务需要自动执行
+        if self.auto_execute is not None and len(self.auto_execute) != 0:
+            # self.auto_execute 已被赋值
+            for i in self.auto_execute:
+                if self.root_config.main_config.has_section(i):
+                    # 从dic里的value值得到相关操作数给"数据执行"方法
+                    pass
+
+    def load_root_config(self, mode):
+        # 加载本地配置
+        self.all_config_dic = {}
+        if mode != 'boot':
+            self.root_config.read_config()
+        config_sections = self.root_config.sections
+        if len(config_sections) > 1:
+            for i in config_sections:
+                if i == custom_constant.rootconfig:
+                    config_name_list = self.root_config.get_value(i, custom_constant.startwithboot)
+                    if config_name_list != '':
+                        self.auto_execute = eval(config_name_list)
+                else:
+                    self.all_config_listbox.insert(END, i)
+                    # self.all_config_dic[i] = self.root_config.main_config.items(i)
+                    self.all_config_dic[i] = self.root_config.get_config(i)
+        else:
+            pass
+        print(self.all_config_dic)
+
+    # 数据处理
+    def execute_work(self, click_object):
+        pass
 
 
 if __name__ == '__main__':
