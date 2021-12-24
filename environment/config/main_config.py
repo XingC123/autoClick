@@ -83,24 +83,10 @@ class MainConfig:
         if action_list_value != '':
             config_list[1] = action_list_value
         return config_list
-        # # 1号位: [[是否点击空白处, {坐标}], [点击, {坐标}]]或[是否点击空白处, {坐标}], [输入, {坐标}, 内容]]
-        # click_blank_value = eval(self.get_value(section, click_blank))
-        # config_list[1][0][0] = click_blank_value
-        # if click_blank_value:
-        #     config_list[1][0][1] = {click_blank_x: int(self.get_value(section, click_blank_x)),
-        #                             click_blank_y: int(self.get_value(section, click_blank_y))
-        #                             }
-        # action_mode_value = self.get_value(section, action_mode)
-        # if action_mode_value == 'click':
-        #     config_list[1][1][0] = 'click'
-        #     config_list[1][1][1] = {action_x: self.get_value(section, action_x),
-        #                             action_y: self.get_value(section, action_y)}
-        # elif action_mode_value == 'input':
-        #     config_list[1][1][0] = 'input'
-        #     config_list[1][1][1] = {action_x: self.get_value(section, action_x),
-        #                             action_y: self.get_value(section, action_y)}
-        #     config_list[1][1][2] = self.get_value(section, input_content)
-        # return config_list
+
+    def delete_section(self, section):
+        if self.main_config.has_section(section):
+            self.main_config.remove_section(section)
 
     @staticmethod
     def if_value_exist(value):
