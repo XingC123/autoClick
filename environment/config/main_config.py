@@ -87,6 +87,7 @@ class MainConfig:
     def delete_section(self, section):
         if self.main_config.has_section(section):
             self.main_config.remove_section(section)
+            self.main_config.write(open(main_config_abspath, 'w+', encoding='utf-8'))
 
     @staticmethod
     def if_value_exist(value):
