@@ -152,8 +152,16 @@ class ConfigEditer:
         def check_state():
             action_type = action_type_value.get()
             if action_type == 'click' or action_type == 'click_blank':
+                action_x_entry['state'] = NORMAL
+                action_y_entry['state'] = NORMAL
                 input_content_text['state'] = 'disabled'
-            else:
+            elif action_type == 'input':
+                action_x_entry['state'] = NORMAL
+                action_y_entry['state'] = NORMAL
+                input_content_text['state'] = 'normal'
+            elif action_type == custom_constant.open_webbroswer or action_type == custom_constant.open_file:
+                action_x_entry['state'] = DISABLED
+                action_y_entry['state'] = DISABLED
                 input_content_text['state'] = 'normal'
 
         action_type_value = StringVar()
@@ -168,6 +176,14 @@ class ConfigEditer:
                                               variable=action_type_value, value='click_blank',
                                               command=check_state)
         click_blank_checkbutton.grid(row=0, column=2)
+        open_webbroswer = Radiobutton(action_type_frame, text='打开网址',
+                                      variable=action_type_value, value=custom_constant.open_webbroswer,
+                                      command=check_state)
+        open_webbroswer.grid(row=0, column=3)
+        open_file = Radiobutton(action_type_frame, text='打开程序',
+                                variable=action_type_value, value=custom_constant.open_file,
+                                command=check_state)
+        open_file.grid(row=0, column=4)
         # 动作属性选择
         action_attribute_frame = Frame(frame)
         action_attribute_frame.grid(row=1)
@@ -182,7 +198,7 @@ class ConfigEditer:
         # 要键入的内容 #
         input_content_frame = Frame(frame)
         input_content_frame.grid(row=2)
-        Label(input_content_frame, text='要键入的内容').grid(row=0)
+        Label(input_content_frame, text='要键入的内容/要打开的网址(格式务必正确)/要打开的文件(完整路径)').grid(row=0)
         input_content_text = Text(input_content_frame, width=50, height=5)
         input_content_text.grid(row=1)
         # 拓展按钮
@@ -198,7 +214,8 @@ class ConfigEditer:
                                             custom_constant.action_x: action_x_entry.get(),
                                             custom_constant.action_y: action_y_entry.get()
                                             })
-            if action_type == 'input':
+            if action_type == 'input' or action_type == custom_constant.open_webbroswer or \
+                    action_type == custom_constant.open_file:
                 self.click_object[1][1][curlength_action_list][custom_constant.input_content] = \
                     input_content_text.get(1.0, END)
             self.action_listbox.insert(END,

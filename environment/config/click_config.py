@@ -20,6 +20,12 @@ class ClickConfig:
         if action_dic[custom_constant.action_mode] == 'input':
             result['操作'] = '输入'
             result['内容'] = action_dic[custom_constant.input_content]
+        elif action_dic[custom_constant.action_mode] == custom_constant.open_webbroswer:
+            result['操作'] = '打开网址'
+            result['网址'] = action_dic[custom_constant.input_content]
+        elif action_dic[custom_constant.action_mode] == custom_constant.open_file:
+            result['操作'] = '打开文件'
+            result['路径'] = action_dic[custom_constant.input_content]
         elif action_dic[custom_constant.action_mode] == 'click':
             result['操作'] = '点击'
         result['坐标'] = (action_dic[custom_constant.action_x], action_dic[custom_constant.action_y])

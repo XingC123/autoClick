@@ -7,11 +7,13 @@ autoclick = 'autoclick'
 autoclick_interval = 'autoclick_interval'
 # 动作列表
 action_list = 'action_list'
-# 动作类型: 点击/输入 -> click/click_blank/input
+# 动作类型: 点击/输入/打开网址/打开文件 -> click/click_blank/input
 action_mode = 'action_mode'
 action_x = 'action_x'
 action_y = 'action_y'
 input_content = 'input_content'
+open_webbroswer = 'open_webbroswer'
+open_file = 'open_file'
 # 单个动作的对象
 click_object = 'click_object'
 

@@ -5,6 +5,8 @@ from tkinter import *
 import environment.config.main_config
 from environment.custom_constant import custom_constant
 import environment.config.click_config as click_config
+# 自定义func方法
+import func.execute_work
 # 自定义gui方法
 import gui.app_info
 import gui.config_editer
@@ -151,10 +153,7 @@ class MainStateWindow:
         self.work_frame.pack_propagate(False)
         self.work_frame.pack()
 
-        def do_all_works_now():
-            pass
-
-        Button(self.work_frame, text='立即执行全部任务', command=do_all_works_now).pack()
+        Button(self.work_frame, text='立即执行全部任务', command=self.execute_all_work).pack()
 
         # 控件初始化完成后的方法
         self.custom_init()
@@ -236,13 +235,17 @@ class MainStateWindow:
         elif count_selected == 0:
             gui.custom_messagebox.CustomMessagebox(self.main_state_window, '配置错误', 200, 100, ['未选择配置'])
 
-    def execute_work(self, click_object):
+    def execute_selected_work(self, click_object):
         pass
 
-    def execute_all_work(self, click_object):
+    def execute_all_work(self):
         # 执行所有任务
         for i in self.all_config_listbox.get(0, self.all_config_listbox.size() - 1):
-            pass
+            def execute():
+                func.execute_work.execute_work(i, self.init_click_object(i, self.all_config_dic[i]))
+            execute_thread = threading.Thread(target=execute)
+            execute_thread.start()
+            execute_thread.join()
 
 
 if __name__ == '__main__':
