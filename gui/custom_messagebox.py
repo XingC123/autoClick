@@ -1,8 +1,8 @@
 from tkinter import *
 
+import environment.custom_constant.custom_constant
 import lib.necessary_lib as necessary_lib
 import lib.stop_with_main_thread as stop_with_main_thread
-import environment.custom_constant.custom_constant
 
 
 class CustomMessagebox:
@@ -12,6 +12,7 @@ class CustomMessagebox:
                  auto_close=False):
         # 传入的自定义方法
         self.func = func
+        # 默认以join方式执行线程任务
         self.custom_func_thread = stop_with_main_thread.StopWithMainThread(self.func, True)
         # 窗口是否执行过自定义的 close() 方法
         self.if_closed = False
@@ -48,9 +49,9 @@ class CustomMessagebox:
             # 执行传入构造函数的方法
             if self.func is not None:
                 self.custom_func_thread.run()
-            if auto_close and self.if_closed is False:
-                # 若窗口设置 auto_close = True ,正常情况下,线程执行成功会自动关闭,即无需执行停止线程操作,传参 False
-                self.close(False)
+                if auto_close and self.if_closed is False:
+                    # 若窗口设置 auto_close = True ,正常情况下,线程执行成功会自动关闭,即无需执行停止线程操作,传参 False
+                    self.close(False)
         stop_with_main_thread.StopWithMainThread(custom_func).run()
 
         # 要在新线程中调用此类,避免报错，注释掉

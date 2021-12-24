@@ -1,4 +1,5 @@
 import threading
+import time
 from tkinter import *
 
 # 自定义环境
@@ -60,7 +61,7 @@ class MainStateWindow:
         self.left_buttons_frame.pack(side=LEFT)
 
         def show_select_config():
-            self.execute_selected('show')
+            self.process_selected('show')
 
         Button(self.left_buttons_frame, text='查看', command=show_select_config).pack(side=TOP, anchor=E)
         Button(self.left_buttons_frame, text='暂停').pack(side=TOP, anchor=E)
@@ -72,7 +73,7 @@ class MainStateWindow:
             curname = self.all_config_listbox.get(curselection)
 
             def start_editer():
-                self.execute_selected('modify', True, event)
+                self.process_selected('modify', True, event)
 
             def change_in_dic():
                 event.wait()
@@ -144,7 +145,11 @@ class MainStateWindow:
         Button(self.right_buttons_frame, text='+', width=2, command=add_config).pack(side=TOP, anchor=W)
 
         def del_config():
-            pass
+            self.deleted_elements_list.append(self.get_selected_name_listbox())
+            if self.all_config_listbox.size() != 0:
+                self.all_config_listbox.delete(self.get_selected_index_listbox())
+            else:
+                gui.custom_messagebox.CustomMessagebox(self.main_state_window, '错误', 200, 200, ['未选择配置'])
 
         Button(self.right_buttons_frame, text='-', width=2, command=del_config).pack(side=TOP, anchor=W)
 
@@ -221,7 +226,15 @@ class MainStateWindow:
         print(self.all_config_dic)
 
     # 数据处理
-    def execute_selected(self, work_mode, send_index=False, event=None):
+    def get_selected_index_listbox(self):
+        # 获取 self.all_config_listbox 选中项的索引 (当前仅支持单选, 所以返回0号位)
+        return self.all_config_listbox.curselection()[0]
+
+    def get_selected_name_listbox(self):
+        # 返回 self.all_config_listbox 选中项的文本
+        return self.all_config_listbox.get(self.get_selected_index_listbox())
+
+    def process_selected(self, work_mode, send_index=False, event=None):
         curselection = self.all_config_listbox.curselection()
         count_selected = len(curselection)
         if count_selected == 1:
@@ -235,17 +248,40 @@ class MainStateWindow:
         elif count_selected == 0:
             gui.custom_messagebox.CustomMessagebox(self.main_state_window, '配置错误', 200, 100, ['未选择配置'])
 
-    def execute_selected_work(self, click_object):
-        pass
+    def execute_selected_work(self):
+        config_name = self.all_config_listbox.get(self.all_config_listbox.curselection()[0])
+        self.init_click_object(config_name, self.all_config_dic[config_name])
+        func.execute_work.execute_work(config_name, self.click_object)
 
     def execute_all_work(self):
         # 执行所有任务
-        for i in self.all_config_listbox.get(0, self.all_config_listbox.size() - 1):
+        length_all_config_listbox = self.all_config_listbox.size()
+        max_index_all_config_listbox = length_all_config_listbox - 1
+        if length_all_config_listbox > 0:
+            event = threading.Event()
+
             def execute():
-                func.execute_work.execute_work(i, self.init_click_object(i, self.all_config_dic[i]))
+                index = 0
+                for i in self.all_config_listbox.get(0, max_index_all_config_listbox):
+                    self.init_click_object(i, self.all_config_dic[i])
+                    func.execute_work.execute_work(i, self.click_object)
+                    if index == max_index_all_config_listbox:
+                        event.set()
+                    index += 1
+                    # 停止3s再进行下个任务
+                    time.sleep(3)
+
+            def check_finish():
+                event.wait()
+
+            def tip_window():
+                gui.custom_messagebox.CustomMessagebox(self.main_state_window, '任务执行中', 400, 200, ['正在执行任务'],
+                                                       False, check_finish, True)
+
+            tip_thread = threading.Thread(target=tip_window)
             execute_thread = threading.Thread(target=execute)
+            tip_thread.start()
             execute_thread.start()
-            execute_thread.join()
 
 
 if __name__ == '__main__':

@@ -1,9 +1,10 @@
-import threading
 from tkinter import *
 
 # 自定义环境 environment
 import environment.config.click_config as click_config
 import environment.custom_constant.custom_constant as custom_constant
+# 自定义gui
+import gui.get_xy_window
 # 自定义lib
 import gui.custom_messagebox
 import lib.necessary_lib as necessary_lib
@@ -151,39 +152,40 @@ class ConfigEditer:
 
         def check_state():
             action_type = action_type_value.get()
-            if action_type == 'click' or action_type == 'click_blank':
+            if action_type == custom_constant.click_action:
                 action_x_entry['state'] = NORMAL
                 action_y_entry['state'] = NORMAL
                 input_content_text['state'] = 'disabled'
-            elif action_type == 'input':
+            elif action_type == custom_constant.input_action:
                 action_x_entry['state'] = NORMAL
                 action_y_entry['state'] = NORMAL
                 input_content_text['state'] = 'normal'
-            elif action_type == custom_constant.open_webbroswer or action_type == custom_constant.open_file:
+            elif action_type == custom_constant.open_webbroswer_action or \
+                    action_type == custom_constant.open_file_action:
                 action_x_entry['state'] = DISABLED
                 action_y_entry['state'] = DISABLED
                 input_content_text['state'] = 'normal'
 
         action_type_value = StringVar()
         action_type_value.set('click')
-        click_checkbutton = Radiobutton(action_type_frame, text='模拟点击', variable=action_type_value, value='click',
-                                        command=check_state)
+        click_checkbutton = Radiobutton(action_type_frame, text='模拟点击', variable=action_type_value,
+                                        value=custom_constant.click_action, command=check_state)
         click_checkbutton.grid(row=0, column=0)
-        input_checkbutton = Radiobutton(action_type_frame, text='模拟输入', variable=action_type_value, value='input',
-                                        command=check_state)
+        input_checkbutton = Radiobutton(action_type_frame, text='模拟输入', variable=action_type_value,
+                                        value=custom_constant.input_action, command=check_state)
         input_checkbutton.grid(row=0, column=1)
-        click_blank_checkbutton = Radiobutton(action_type_frame, text='点击空白处',
-                                              variable=action_type_value, value='click_blank',
-                                              command=check_state)
-        click_blank_checkbutton.grid(row=0, column=2)
+        # click_blank_checkbutton = Radiobutton(action_type_frame, text='点击空白处',
+        #                                       variable=action_type_value, value='click_blank',
+        #                                       command=check_state)
+        # click_blank_checkbutton.grid(row=0, column=2)
         open_webbroswer = Radiobutton(action_type_frame, text='打开网址',
-                                      variable=action_type_value, value=custom_constant.open_webbroswer,
+                                      variable=action_type_value, value=custom_constant.open_webbroswer_action,
                                       command=check_state)
-        open_webbroswer.grid(row=0, column=3)
+        open_webbroswer.grid(row=0, column=2)
         open_file = Radiobutton(action_type_frame, text='打开程序',
-                                variable=action_type_value, value=custom_constant.open_file,
+                                variable=action_type_value, value=custom_constant.open_file_action,
                                 command=check_state)
-        open_file.grid(row=0, column=4)
+        open_file.grid(row=0, column=3)
         # 动作属性选择
         action_attribute_frame = Frame(frame)
         action_attribute_frame.grid(row=1)
@@ -195,6 +197,11 @@ class ConfigEditer:
         Label(action_attribute_frame, text='Y').grid(row=0, column=3, padx=5)
         action_y_entry = Entry(action_attribute_frame, width=5)
         action_y_entry.grid(row=0, column=4, padx=5)
+
+        def get_xy():
+            gui.get_xy_window.GetXY(window, action_x_entry, action_y_entry)
+
+        Button(action_attribute_frame, text='采集', command=get_xy).grid(row=0, column=5, padx=5)
         # 要键入的内容 #
         input_content_frame = Frame(frame)
         input_content_frame.grid(row=2)
@@ -214,8 +221,8 @@ class ConfigEditer:
                                             custom_constant.action_x: action_x_entry.get(),
                                             custom_constant.action_y: action_y_entry.get()
                                             })
-            if action_type == 'input' or action_type == custom_constant.open_webbroswer or \
-                    action_type == custom_constant.open_file:
+            if action_type == custom_constant.input_action or action_type == custom_constant.open_webbroswer_action or \
+                    action_type == custom_constant.open_file_action:
                 self.click_object[1][1][curlength_action_list][custom_constant.input_content] = \
                     input_content_text.get(1.0, END)
             self.action_listbox.insert(END,
@@ -245,7 +252,6 @@ class ConfigEditer:
         index = self.action_listbox.curselection()
         if index != '':
             self.action_listbox.delete(index)
-            gui.custom_messagebox.CustomMessagebox(self.root_window, '成功', 200, 200, ['删除成功'])
         else:
             gui.custom_messagebox.CustomMessagebox(self.root_window, '错误', 200, 200, ['未选中操作项'])
 

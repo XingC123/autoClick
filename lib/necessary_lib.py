@@ -12,10 +12,10 @@ def fit_screen_zoom(window):
 
 
 def real_screen_size(window):
-    ScaleFactor = ctypes.windll.shcore.GetScaleFactorForDevice(0) / 100
+    # ScaleFactor = ctypes.windll.shcore.GetScaleFactorForDevice(0) / 100
     # print(window.winfo_screenwidth(), window.winfo_screenheight())
-    return window.winfo_screenwidth() * ScaleFactor, window.winfo_screenheight() * ScaleFactor
-    # return window.winfo_screenwidth(), window.winfo_screenheight()
+    # return window.winfo_screenwidth() * ScaleFactor, window.winfo_screenheight() * ScaleFactor
+    return window.winfo_screenwidth(), window.winfo_screenheight()
 
 
 def middle_screen(window, width, height):

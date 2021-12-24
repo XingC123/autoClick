@@ -1,5 +1,4 @@
 from tkinter import *
-from tkinter.font import Font
 
 import lib.necessary_lib as necessary_lib
 

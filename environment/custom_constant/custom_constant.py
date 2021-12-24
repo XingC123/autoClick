@@ -12,8 +12,10 @@ action_mode = 'action_mode'
 action_x = 'action_x'
 action_y = 'action_y'
 input_content = 'input_content'
-open_webbroswer = 'open_webbroswer'
-open_file = 'open_file'
+click_action = 'click'
+input_action = 'input'
+open_webbroswer_action = 'open_webbroswer'
+open_file_action = 'open_file'
 # 单个动作的对象
 click_object = 'click_object'
 
