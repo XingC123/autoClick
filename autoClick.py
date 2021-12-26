@@ -68,25 +68,30 @@ class MainStateWindow:
 
         def modify_select_config():
             event = threading.Event()
-            # 获取当前选中项信息
-            curselection = self.all_config_listbox.curselection()[0]
-            curname = self.all_config_listbox.get(curselection)
+            curselection = ()
 
             def start_editer():
-                self.process_selected('modify', True, event)
+                nonlocal curselection
+                curselection = self.process_selected('modify', True, event)
 
             def change_in_dic():
                 event.wait()
-                # 删除listbox中选中项数据
-                self.all_config_listbox.delete(curselection)
-                # 添加删除配置名称添加入全局删除列表中
-                self.deleted_elements_list.append(curname)
-                # 删除dic中原配置名, 并插入新数据
-                del self.all_config_dic[curname]
-                config_name = self.click_object[0]
-                self.all_config_dic[config_name] = self.click_object[1]
-                # 插入到原位置
-                self.all_config_listbox.insert(curselection, config_name)
+                nonlocal curselection
+                if len(curselection) > 0:
+                    # 获取当前选中项信息
+                    curselection = curselection[0]
+                    curname = self.all_config_listbox.get(curselection)
+                    # 删除listbox中选中项数据
+                    self.all_config_listbox.delete(curselection)
+                    # 添加删除配置名称添加入全局删除列表中
+                    self.deleted_elements_list.append(curname)
+                    # 删除dic中原配置名, 并插入新数据
+                    del self.all_config_dic[curname]
+                    config_name = self.click_object[0]
+                    self.all_config_dic[config_name] = self.click_object[1]
+                    # 插入到原位置
+                    self.all_config_listbox.insert(curselection, config_name)
+                    print('更改完毕')
 
             editer_thread = threading.Thread(target=start_editer)
             change_thread = threading.Thread(target=change_in_dic)
@@ -149,7 +154,7 @@ class MainStateWindow:
             if self.all_config_listbox.size() != 0:
                 self.all_config_listbox.delete(self.get_selected_index_listbox())
             else:
-                gui.custom_messagebox.CustomMessagebox(self.main_state_window, '错误', 200, 200, ['未选择配置'])
+                gui.custom_messagebox.CustomMessagebox(self.main_state_window, '错误', 200, 100, ['未选择配置'])
 
         Button(self.right_buttons_frame, text='-', width=2, command=del_config).pack(side=TOP, anchor=W)
 
@@ -158,7 +163,8 @@ class MainStateWindow:
         self.work_frame.pack_propagate(False)
         self.work_frame.pack()
 
-        Button(self.work_frame, text='立即执行全部任务', command=self.execute_all_work).pack()
+        Button(self.work_frame, text='立即执行选中任务', command=self.execute_selected_work).grid(row=0, column=0)
+        Button(self.work_frame, text='立即执行全部任务', command=self.execute_all_work).grid(row=0, column=1)
 
         # 控件初始化完成后的方法
         self.custom_init()
@@ -228,13 +234,26 @@ class MainStateWindow:
     # 数据处理
     def get_selected_index_listbox(self):
         # 获取 self.all_config_listbox 选中项的索引 (当前仅支持单选, 所以返回0号位)
-        return self.all_config_listbox.curselection()[0]
+        curselection = self.all_config_listbox.curselection()
+        # if self.all_config_listbox.size() > 0:
+        #     return self.all_config_listbox.curselection()[0]
+        # else:
+        #     return ''
+        if len(curselection) != 0:
+            return curselection[0]
+        else:
+            return -1
 
     def get_selected_name_listbox(self):
         # 返回 self.all_config_listbox 选中项的文本
-        return self.all_config_listbox.get(self.get_selected_index_listbox())
+        curselection = self.all_config_listbox.curselection()
+        if len(curselection) != 0:
+            return self.all_config_listbox.get(self.get_selected_index_listbox())
+        else:
+            return ''
 
     def process_selected(self, work_mode, send_index=False, event=None):
+        # 处理所选项
         curselection = self.all_config_listbox.curselection()
         count_selected = len(curselection)
         if count_selected == 1:
@@ -247,11 +266,33 @@ class MainStateWindow:
                 gui.config_editer.ConfigEditer(self.main_state_window, self.click_object, work_mode)
         elif count_selected == 0:
             gui.custom_messagebox.CustomMessagebox(self.main_state_window, '配置错误', 200, 100, ['未选择配置'])
+            if send_index:
+                event.set()
+        return curselection
 
     def execute_selected_work(self):
-        config_name = self.all_config_listbox.get(self.all_config_listbox.curselection()[0])
-        self.init_click_object(config_name, self.all_config_dic[config_name])
-        func.execute_work.execute_work(config_name, self.click_object)
+        # 执行所选项
+        config_name = self.get_selected_name_listbox()
+        if config_name == '':
+            gui.custom_messagebox.CustomMessagebox(self.main_state_window, '配置错误', 200, 100, ['未选择配置'])
+        else:
+            event = threading.Event()
+
+            def execute():
+                self.init_click_object(config_name, self.all_config_dic[config_name])
+                func.execute_work.execute_work(config_name, self.click_object, event)
+
+            def check_finish():
+                event.wait()
+
+            def tip_window():
+                gui.custom_messagebox.CustomMessagebox(self.main_state_window, '任务执行中', 400, 200, ['正在执行任务'],
+                                                       False, check_finish, True)
+
+            tip_thread = threading.Thread(target=tip_window)
+            execute_thread = threading.Thread(target=execute)
+            tip_thread.start()
+            execute_thread.start()
 
     def execute_all_work(self):
         # 执行所有任务
@@ -282,6 +323,8 @@ class MainStateWindow:
             execute_thread = threading.Thread(target=execute)
             tip_thread.start()
             execute_thread.start()
+        else:
+            gui.custom_messagebox.CustomMessagebox(self.main_state_window, '配置错误', 200, 100, ['配置为空'])
 
 
 if __name__ == '__main__':

@@ -9,9 +9,11 @@ class CustomMessagebox:
     Message_font = 10
 
     def __init__(self, parent_window, title, width, height, string_list, if_disable_parent=True, func=None,
-                 auto_close=False):
+                 auto_close=False, event=None):
         # 传入的自定义方法
         self.func = func
+        # 需要处理的 event
+        self.event = event
         # 默认以join方式执行线程任务
         self.custom_func_thread = stop_with_main_thread.StopWithMainThread(self.func, True)
         # 窗口是否执行过自定义的 close() 方法
@@ -64,6 +66,8 @@ class CustomMessagebox:
             if str(son_thread).find('stopped') == -1:
                 # 子线程未被关闭
                 stop_with_main_thread.stop_thread(self.custom_func_thread.thread)
+        if self.event is not None:
+            self.event.set()
         if self.if_disable_parent:
             self.parent_window.attributes('-disable', False)
         self.msg_window.destroy()

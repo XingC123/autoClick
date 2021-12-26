@@ -1,3 +1,4 @@
+import threading
 from tkinter import *
 
 # 自定义环境 environment
@@ -82,28 +83,7 @@ class ConfigEditer:
 
         # 保存配置按钮
         def save_config():
-            config_name = self.config_name_entry.get()
-            if config_name != '':
-                # 在配置名不为空的情况下进行保存操作
-                self.click_object[0] = config_name
-                # 保存"自动执行"和"延迟执行时间"
-                auto_click = self.autoClick_checkbutton_value.get()
-                length_auto_click_list = len(self.click_object[1][0])
-                if length_auto_click_list == 0:
-                    # 长度为0, 说明"work_mode = add"
-                    self.click_object[1][0].append(auto_click)
-                    if auto_click:
-                        self.click_object[1][0].append(self.autoClick_interval_entry.get())
-                else:
-                    self.click_object[1][0][0] = auto_click
-                    if auto_click:
-                        self.click_object[1][0][1] = self.autoClick_interval_entry.get()
-                # 处理动作列表所有动作
-                # for i in self.action_listbox.get(0, self.action_listbox.size()-1):
-                #     pass
-                gui.custom_messagebox.CustomMessagebox(self.root_window, '成功', 250, 100, ['保存成功'])
-            else:
-                gui.custom_messagebox.CustomMessagebox(self.root_window, '配置错误', 250, 100, ['配置名称不能为空'])
+            self.save_config()
 
         if self.work_mode != 'show':
             Button(self.func_frame, text='保存', command=save_config).grid(row=3)
@@ -134,6 +114,84 @@ class ConfigEditer:
             # 中间动作列表
             for i in self.click_object[1][1]:
                 self.action_listbox.insert(END, click_config.ClickConfig().print_click_object(i))
+
+    def save_config(self):
+        config_name = self.config_name_entry.get()
+        tip_close_event = threading.Event()
+
+        def tip_window_success():
+            gui.custom_messagebox.CustomMessagebox(self.root_window, '成功', 250, 100, ['保存成功'], True, None, False,
+                                                   tip_close_event)
+
+        def close():
+            tip_close_event.wait()
+            self.close()
+
+        if len(config_name) != 0:
+            # 在配置名不为空的情况下进行保存操作
+            self.click_object[0] = config_name
+            # 保存"自动执行"和"延迟执行时间"
+            auto_click = self.autoClick_checkbutton_value.get()
+            autoclick_interval = self.autoClick_interval_entry.get()
+            length_autoclick_interval = len(autoclick_interval)
+            length_auto_click_list = len(self.click_object[1][0])
+            # 是否所有选项都符合要求
+            auto_click_finish = False
+            if length_auto_click_list == 0:
+                # 长度为0, 说明"work_mode = add"
+                self.click_object[1][0].append(auto_click)
+                if auto_click:
+                    if length_autoclick_interval == 0:
+                        gui.custom_messagebox.CustomMessagebox(self.root_window, '配置错误', 250, 100, ['延迟时间不能为空'])
+                    else:
+                        self.click_object[1][0][0] = auto_click
+                        self.click_object[1][0].append(autoclick_interval)
+                        auto_click_finish = True
+                else:
+                    auto_click_finish = True
+            else:
+                if self.click_object[1][0][0]:
+                    if auto_click:
+                        if length_autoclick_interval == 0:
+                            gui.custom_messagebox.CustomMessagebox(self.root_window, '配置错误', 250, 100, ['延迟时间不能为空'])
+                        else:
+                            self.click_object[1][0][0] = auto_click
+                            self.click_object[1][0][1] = autoclick_interval
+                            auto_click_finish = True
+                    else:
+                        auto_click_finish = True
+                else:
+                    if auto_click:
+                        if length_autoclick_interval == 0:
+                            gui.custom_messagebox.CustomMessagebox(self.root_window, '配置错误', 250, 100, ['延迟时间不能为空'])
+                        else:
+                            self.click_object[1][0][0] = auto_click
+                            self.click_object[1][0].append(autoclick_interval)
+                            auto_click_finish = True
+                    else:
+                        auto_click_finish = True
+            if auto_click_finish:
+                tip_thread = threading.Thread(target=tip_window_success)
+                close_thread = threading.Thread(target=close)
+                tip_thread.start()
+                close_thread.start()
+        else:
+            gui.custom_messagebox.CustomMessagebox(self.root_window, '配置错误', 250, 100, ['配置名称不能为空'])
+
+    def del_action(self):
+        index = self.action_listbox.curselection()
+        if len(index) != 0:
+            self.action_listbox.delete(index[0])
+            del self.click_object[1][1][index[0]]
+        else:
+            gui.custom_messagebox.CustomMessagebox(self.root_window, '错误', 200, 200, ['未选中操作项'])
+
+    def close(self):
+        if self.work_mode == 'modify' or self.work_mode == 'add':
+            if self.event is not None:
+                self.event.set()
+        self.parent_window.attributes('-disable', False)
+        self.root_window.destroy()
 
     # 添加动作
     def add_action(self):
@@ -247,17 +305,3 @@ class ConfigEditer:
 
         window.protocol('WM_DELETE_WINDOW', lambda: close())
         # window.mainloop()
-
-    def del_action(self):
-        index = self.action_listbox.curselection()
-        if index != '':
-            self.action_listbox.delete(index)
-        else:
-            gui.custom_messagebox.CustomMessagebox(self.root_window, '错误', 200, 200, ['未选中操作项'])
-
-    def close(self):
-        if self.work_mode == 'modify' or self.work_mode == 'add':
-            if self.event is not None:
-                self.event.set()
-        self.parent_window.attributes('-disable', False)
-        self.root_window.destroy()
