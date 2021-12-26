@@ -157,6 +157,8 @@ class MainStateWindow:
                 gui.custom_messagebox.CustomMessagebox(self.main_state_window, '错误', 200, 100, ['未选择配置'])
 
         Button(self.right_buttons_frame, text='-', width=2, command=del_config).pack(side=TOP, anchor=W)
+        Button(self.right_buttons_frame, text='↑', width=2).pack(side=TOP, anchor=W)
+        Button(self.right_buttons_frame, text='↓', width=2).pack(side=TOP, anchor=W)
 
         # 功能区frame(一般指最下方按钮所在frame)
         self.work_frame = Frame(self.main_state_window, width=width_root_window, height=50)
@@ -235,10 +237,6 @@ class MainStateWindow:
     def get_selected_index_listbox(self):
         # 获取 self.all_config_listbox 选中项的索引 (当前仅支持单选, 所以返回0号位)
         curselection = self.all_config_listbox.curselection()
-        # if self.all_config_listbox.size() > 0:
-        #     return self.all_config_listbox.curselection()[0]
-        # else:
-        #     return ''
         if len(curselection) != 0:
             return curselection[0]
         else:

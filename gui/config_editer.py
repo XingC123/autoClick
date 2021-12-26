@@ -80,6 +80,8 @@ class ConfigEditer:
             # 不是"查看配置"才可以显示"添加"和"删除"按钮
             Button(self.right_button_frame, text='+', width=2, command=self.add_action).grid(row=0)
             Button(self.right_button_frame, text='-', width=2, command=self.del_action).grid(row=1)
+            Button(self.right_button_frame, text='↑', width=2).grid(row=2)
+            Button(self.right_button_frame, text='↓', width=2).grid(row=3)
 
         # 保存配置按钮
         def save_config():
