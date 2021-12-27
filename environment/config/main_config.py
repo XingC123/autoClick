@@ -91,7 +91,7 @@ class MainConfig:
 
     @staticmethod
     def if_value_exist(value):
-        # 判断所给函数值是否为空
+        # 判断所给配置项的值是否为空
         if value != '':
             return eval(value)
         return ''

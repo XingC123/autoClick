@@ -91,7 +91,6 @@ class MainStateWindow:
                     self.all_config_dic[config_name] = self.click_object[1]
                     # 插入到原位置
                     self.all_config_listbox.insert(curselection, config_name)
-                    print('更改完毕')
 
             editer_thread = threading.Thread(target=start_editer)
             change_thread = threading.Thread(target=change_in_dic)
@@ -230,6 +229,7 @@ class MainStateWindow:
                     self.all_config_dic[i] = eval(self.root_config.get_value(i, custom_constant.click_object))
         else:
             pass
+        threading.Thread(target=self.auto_execute_work).start()
         print('加载函数结果: ', end='')
         print(self.all_config_dic)
 
@@ -323,6 +323,34 @@ class MainStateWindow:
             execute_thread.start()
         else:
             gui.custom_messagebox.CustomMessagebox(self.main_state_window, '配置错误', 200, 100, ['配置为空'])
+
+    def auto_execute_work(self):
+        if len(self.auto_execute) != 0:
+            event = threading.Event()
+
+            def execute():
+                index = 0
+                max_index_startwithboot_list = len(self.auto_execute) - 1
+                for i in self.auto_execute:
+                    self.init_click_object(i, self.all_config_dic[i])
+                    if self.click_object[1][0][0]:
+                        time.sleep(int(self.click_object[1][0][1]))
+                    func.execute_work.execute_work(i, self.click_object)
+                    if index == max_index_startwithboot_list:
+                        event.set()
+                    time.sleep(3)
+
+            def check_finish():
+                event.wait()
+
+            def tip_window():
+                gui.custom_messagebox.CustomMessagebox(self.main_state_window, '任务执行中', 400, 200,
+                                                       ['检查到需要自动执行的配置', '正在执行任务'], False, check_finish, True)
+
+            tip_thread = threading.Thread(target=tip_window)
+            execute_thread = threading.Thread(target=execute)
+            tip_thread.start()
+            execute_thread.start()
 
 
 if __name__ == '__main__':
