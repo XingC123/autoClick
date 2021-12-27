@@ -277,15 +277,21 @@ class MainStateWindow:
             event = threading.Event()
 
             def execute():
-                self.init_click_object(config_name, self.all_config_dic[config_name])
-                func.execute_work.execute_work(config_name, self.click_object, event)
+                time.sleep(3)
+                if event.is_set() is False:
+                    self.init_click_object(config_name, self.all_config_dic[config_name])
+                    func.execute_work.execute_work(config_name, self.click_object, event)
+                else:
+                    if str(tip_thread).find('stopped') == -1:
+                        stop_with_main_thread.stop_thread(tip_thread)
+                    return
 
             def check_finish():
                 event.wait()
 
             def tip_window():
                 gui.custom_messagebox.CustomMessagebox(self.main_state_window, '任务执行中', 400, 200, ['正在执行任务'],
-                                                       False, check_finish, True)
+                                                       False, check_finish, True, event)
 
             tip_thread = threading.Thread(target=tip_window)
             execute_thread = threading.Thread(target=execute)
@@ -300,12 +306,18 @@ class MainStateWindow:
             event = threading.Event()
 
             def execute():
+                time.sleep(3)
                 index = 0
                 for i in self.all_config_listbox.get(0, max_index_all_config_listbox):
-                    self.init_click_object(i, self.all_config_dic[i])
-                    func.execute_work.execute_work(i, self.click_object)
-                    if index == max_index_all_config_listbox:
-                        event.set()
+                    if event.is_set() is False:
+                        self.init_click_object(i, self.all_config_dic[i])
+                        func.execute_work.execute_work(i, self.click_object)
+                        if index == max_index_all_config_listbox:
+                            event.set()
+                    else:
+                        if str(tip_thread).find('stopped') == -1:
+                            stop_with_main_thread.stop_thread(tip_thread)
+                        return
                     index += 1
                     # 停止3s再进行下个任务
                     time.sleep(3)
@@ -315,7 +327,7 @@ class MainStateWindow:
 
             def tip_window():
                 gui.custom_messagebox.CustomMessagebox(self.main_state_window, '任务执行中', 400, 200, ['正在执行任务'],
-                                                       False, check_finish, True)
+                                                       False, check_finish, True, event)
 
             tip_thread = threading.Thread(target=tip_window)
             execute_thread = threading.Thread(target=execute)
@@ -331,13 +343,20 @@ class MainStateWindow:
             def execute():
                 index = 0
                 max_index_startwithboot_list = len(self.auto_execute) - 1
+                time.sleep(3)
                 for i in self.auto_execute:
-                    self.init_click_object(i, self.all_config_dic[i])
-                    if self.click_object[1][0][0]:
-                        time.sleep(int(self.click_object[1][0][1]))
-                    func.execute_work.execute_work(i, self.click_object)
-                    if index == max_index_startwithboot_list:
-                        event.set()
+                    if event.is_set() is False:
+                        self.init_click_object(i, self.all_config_dic[i])
+                        if self.click_object[1][0][0]:
+                            time.sleep(int(self.click_object[1][0][1]))
+                        func.execute_work.execute_work(i, self.click_object)
+                        if index == max_index_startwithboot_list:
+                            event.set()
+                    else:
+                        if str(tip_thread).find('stopped') == -1:
+                            stop_with_main_thread.stop_thread(tip_thread)
+                        return
+                    index += 1
                     time.sleep(3)
 
             def check_finish():
@@ -345,7 +364,8 @@ class MainStateWindow:
 
             def tip_window():
                 gui.custom_messagebox.CustomMessagebox(self.main_state_window, '任务执行中', 400, 200,
-                                                       ['检查到需要自动执行的配置', '正在执行任务'], False, check_finish, True)
+                                                       ['检查到需要自动执行的配置', '3s后自动执行任务'],
+                                                       False, check_finish, True, event)
 
             tip_thread = threading.Thread(target=tip_window)
             execute_thread = threading.Thread(target=execute)
