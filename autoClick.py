@@ -254,10 +254,9 @@ class MainStateWindow:
                 self.all_config_listbox.insert(END, i)
                 self.all_config_dic[i] = eval(self.root_config.get_value(i, custom_constant.click_object))
         else:
-            pass
+            self.auto_execute = []
+            self.config_priority_list = []
         threading.Thread(target=self.auto_execute_work).start()
-        print('加载函数结果: ', end='')
-        print(self.all_config_dic)
 
     def adjust_config_priority(self, change):
         # 配置优先级调整

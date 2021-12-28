@@ -13,7 +13,6 @@ class MainConfig:
         # 为配置文件属性赋值
         global main_config_abspath
         main_config_abspath = os.path.join(main_app_execute_path, main_config_name)
-        print('main_config_abspath = ', main_config_abspath)
         # 本类属性
         self.config_path = main_config_abspath
         self.main_config = None
@@ -21,6 +20,7 @@ class MainConfig:
         if self.read_config() is False:
             self.main_config = configparser.ConfigParser()
             self.set_value(rootconfig, startwithboot, '')
+            self.set_value(rootconfig, config_priority, '')
             self.sections = self.get_sections()
 
         # 程序运行重要配置
