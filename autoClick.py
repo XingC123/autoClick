@@ -30,7 +30,10 @@ class MainStateWindow:
         self.click_object = None
         # 保存所有配置信息的dic字典
         self.all_config_dic = None
+        # 本地配置中, 需要启动程序自动执行的额配置名称的列表
         self.auto_execute = None
+        # 按优先级排序的本地配置名称列表
+        self.config_priority_list = None
         # 所有需要在本地配置中删除的项目的列表
         self.deleted_elements_list = []
 
@@ -64,7 +67,7 @@ class MainStateWindow:
             self.process_selected('show')
 
         Button(self.left_buttons_frame, text='查看', command=show_select_config).pack(side=TOP, anchor=E)
-        Button(self.left_buttons_frame, text='暂停').pack(side=TOP, anchor=E)
+        # Button(self.left_buttons_frame, text='暂停').pack(side=TOP, anchor=E)
 
         def modify_select_config():
             event = threading.Event()
@@ -91,6 +94,8 @@ class MainStateWindow:
                     self.all_config_dic[config_name] = self.click_object[1]
                     # 插入到原位置
                     self.all_config_listbox.insert(curselection, config_name)
+                    self.all_config_listbox.activate(curselection)
+                    self.all_config_listbox.select_set(curselection)
 
             editer_thread = threading.Thread(target=start_editer)
             change_thread = threading.Thread(target=change_in_dic)
@@ -103,13 +108,17 @@ class MainStateWindow:
             # 删除本地配置文件中已被废弃的项目
             for i in self.deleted_elements_list:
                 self.root_config.delete_section(i)
+            # 配置优先级列表
+            self.root_config.set_value(custom_constant.rootconfig, custom_constant.config_priority,
+                                       self.config_priority_list)
             # 需要自动执行的配置名称的列表
             startwithboot_list = []
             for i in self.all_config_listbox.get(0, self.all_config_listbox.size() - 1):
                 # 写入配置
                 self.root_config.set_value(i, custom_constant.click_object, self.all_config_dic[i])
                 # 检查是否需要自动执行
-                if self.all_config_dic[i][0][0]:
+
+                if len(self.all_config_dic[i][0]) != 0 and self.all_config_dic[i][0][0]:
                     startwithboot_list.append(i)
             self.root_config.set_value(custom_constant.rootconfig, custom_constant.startwithboot, startwithboot_list)
 
@@ -131,17 +140,19 @@ class MainStateWindow:
             event = threading.Event()
             self.init_click_object('', [[], []])
 
-            def start_eduter():
+            def start_editer():
                 gui.config_editer.ConfigEditer(self.main_state_window, self.click_object, 'add', None, event)
 
             def write_to_dic():
                 # 写入保存所有配置名称的dic中
                 event.wait()
                 config_name = self.click_object[0]
-                self.all_config_dic[config_name] = self.click_object[1]
-                self.all_config_listbox.insert(END, config_name)
+                if config_name != '':
+                    self.all_config_dic[config_name] = self.click_object[1]
+                    self.all_config_listbox.insert(END, config_name)
+                    self.config_priority_list.append(config_name)
 
-            editer_thread = threading.Thread(target=start_eduter)
+            editer_thread = threading.Thread(target=start_editer)
             write_thread = threading.Thread(target=write_to_dic)
             editer_thread.start()
             write_thread.start()
@@ -149,15 +160,26 @@ class MainStateWindow:
         Button(self.right_buttons_frame, text='+', width=2, command=add_config).pack(side=TOP, anchor=W)
 
         def del_config():
-            self.deleted_elements_list.append(self.get_selected_name_listbox())
+            config_name = self.get_selected_name_listbox()
+            curselection_index = self.get_selected_index_listbox()
             if self.all_config_listbox.size() != 0:
-                self.all_config_listbox.delete(self.get_selected_index_listbox())
+                self.deleted_elements_list.append(config_name)
+                self.all_config_listbox.delete(curselection_index)
+                del self.all_config_dic[config_name]
+                del self.config_priority_list[curselection_index]
             else:
                 gui.custom_messagebox.CustomMessagebox(self.main_state_window, '错误', 200, 100, ['未选择配置'])
 
         Button(self.right_buttons_frame, text='-', width=2, command=del_config).pack(side=TOP, anchor=W)
-        Button(self.right_buttons_frame, text='↑', width=2).pack(side=TOP, anchor=W)
-        Button(self.right_buttons_frame, text='↓', width=2).pack(side=TOP, anchor=W)
+
+        def up_priority():
+            self.adjust_config_priority('up')
+
+        def down_priority():
+            self.adjust_config_priority('down')
+
+        Button(self.right_buttons_frame, text='↑', width=2, command=up_priority).pack(side=TOP, anchor=W)
+        Button(self.right_buttons_frame, text='↓', width=2, command=down_priority).pack(side=TOP, anchor=W)
 
         # 功能区frame(一般指最下方按钮所在frame)
         self.work_frame = Frame(self.main_state_window, width=width_root_window, height=50)
@@ -219,19 +241,61 @@ class MainStateWindow:
             self.root_config.read_config()
         config_sections = self.root_config.sections
         if len(config_sections) > 1:
-            for i in config_sections:
-                if i == custom_constant.rootconfig:
-                    config_name_list = self.root_config.get_value(i, custom_constant.startwithboot)
-                    if config_name_list != '':
-                        self.auto_execute = eval(config_name_list)
-                else:
-                    self.all_config_listbox.insert(END, i)
-                    self.all_config_dic[i] = eval(self.root_config.get_value(i, custom_constant.click_object))
+            # 获取需要自动执行的配置的名称
+            config_name_list = self.root_config.get_value(custom_constant.rootconfig, custom_constant.startwithboot)
+            if config_name_list != '':
+                self.auto_execute = eval(config_name_list)
+            # 获取配置显示和执行的优先级
+            config_priority = self.root_config.get_value(custom_constant.rootconfig, custom_constant.config_priority)
+            if config_priority != '':
+                self.config_priority_list = eval(config_priority)
+            # 按优先级顺序赋值
+            for i in self.config_priority_list:
+                self.all_config_listbox.insert(END, i)
+                self.all_config_dic[i] = eval(self.root_config.get_value(i, custom_constant.click_object))
         else:
             pass
         threading.Thread(target=self.auto_execute_work).start()
         print('加载函数结果: ', end='')
         print(self.all_config_dic)
+
+    def adjust_config_priority(self, change):
+        # 配置优先级调整
+        # 获取选中项
+        curselection_index = self.get_selected_index_listbox()
+        if curselection_index != -1:
+            if change == 'up':
+                # 提高配置执行优先级
+                if curselection_index != 0:
+                    last_index = curselection_index - 1
+                    # 调整 self.config_priority_list
+                    tmp = self.config_priority_list[curselection_index]
+                    del self.config_priority_list[curselection_index]
+                    self.config_priority_list.insert(last_index, tmp)
+                    # 调整ui的listbox部分
+                    tmp = self.all_config_listbox.get(curselection_index)
+                    self.all_config_listbox.delete(curselection_index)
+                    self.all_config_listbox.insert(last_index, tmp)
+                    self.all_config_listbox.see(last_index)
+                    self.all_config_listbox.activate(last_index)
+                    self.all_config_listbox.select_set(last_index)
+            else:
+                # 降低优先级
+                if curselection_index != self.all_config_listbox.size() - 1:
+                    next_index = curselection_index + 1
+                    # 调整 self.config_priority
+                    tmp = self.config_priority_list[curselection_index]
+                    del self.config_priority_list[curselection_index]
+                    self.config_priority_list.insert(next_index, tmp)
+                    # 调整ui的listbox部分
+                    tmp = self.all_config_listbox.get(curselection_index)
+                    self.all_config_listbox.delete(curselection_index)
+                    self.all_config_listbox.insert(next_index, tmp)
+                    self.all_config_listbox.see(next_index)
+                    self.all_config_listbox.activate(next_index)
+                    self.all_config_listbox.select_set(next_index)
+        else:
+            gui.custom_messagebox.CustomMessagebox(self.main_state_window, '配置错误', 200, 100, ['未选择配置'])
 
     # 数据处理
     def get_selected_index_listbox(self):

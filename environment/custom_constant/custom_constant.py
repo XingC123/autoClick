@@ -1,7 +1,10 @@
 from tkinter.font import Font
 # 重要配置
 rootconfig = 'rootconfig'
+# 启动程序自动执行的配置名称列表
 startwithboot = 'startwithboot'
+# 按优先级排序的配置名称列表
+config_priority = 'config_priority'
 # 自动点击
 autoclick = 'autoclick'
 autoclick_interval = 'autoclick_interval'
