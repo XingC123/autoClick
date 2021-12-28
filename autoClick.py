@@ -401,7 +401,7 @@ class MainStateWindow:
             gui.custom_messagebox.CustomMessagebox(self.main_state_window, '配置错误', 200, 100, ['配置为空'])
 
     def auto_execute_work(self):
-        if len(self.auto_execute) != 0:
+        if self.auto_execute is not None and len(self.auto_execute) != 0:
             event = threading.Event()
 
             def execute():
