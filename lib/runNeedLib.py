@@ -1,11 +1,10 @@
-import os
 import sys
+from pathlib import Path
 
 
 def getCurRunPath(filePath):
     if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
+        return Path(sys.executable).parent
 
     elif __file__:
-        return os.path.dirname(filePath)
-        # return str(filePath)
+        return Path(filePath).parent

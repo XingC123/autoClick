@@ -1,5 +1,6 @@
 import configparser
-import os.path
+from pathlib import Path
+
 from environment.custom_constant.custom_constant import *
 
 # 配置文件属性声明(赋值在MainConfig()的init函数中)
@@ -12,7 +13,7 @@ class MainConfig:
     def __init__(self, main_app_execute_path):
         # 为配置文件属性赋值
         global main_config_abspath
-        main_config_abspath = os.path.join(main_app_execute_path, main_config_name)
+        main_config_abspath = Path(main_app_execute_path, main_config_name)
         # 本类属性
         self.config_path = main_config_abspath
         self.main_config = None
@@ -27,7 +28,7 @@ class MainConfig:
         self.root_config = None
 
     def read_config(self):
-        if os.path.exists(main_config_abspath):
+        if Path(main_config_abspath).exists:
             if self.main_config is not None:
                 self.main_config = None
             self.main_config = configparser.ConfigParser()
