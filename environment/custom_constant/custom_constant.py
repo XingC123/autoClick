@@ -1,4 +1,5 @@
 from tkinter.font import Font
+
 # 重要配置
 rootconfig = 'rootconfig'
 # 启动程序自动执行的配置名称列表
@@ -17,6 +18,9 @@ action_y = 'action_y'
 input_content = 'input_content'
 click_action = 'click'
 input_action = 'input'
+click_type = 'click_type'  # 点击类型: [once: 点击一次] [continuous: 持续点击]
+click_type_once = 'once'  # 点击类型: [once: 点击一次] [continuous: 持续点击]
+click_type_continuous = 'continuous'  # 点击类型: [once: 点击一次] [continuous: 持续点击]
 open_webbroswer_action = 'open_webbroswer'
 open_file_action = 'open_file'
 # 单个动作的对象

@@ -27,6 +27,10 @@ class ClickConfig:
             result['操作'] = '打开文件'
             result['路径'] = action_dic[custom_constant.input_content]
         elif action_dic[custom_constant.action_mode] == custom_constant.click_action:
-            result['操作'] = '点击'
+            if action_dic[custom_constant.click_type] == custom_constant.click_type_once:
+                click_type = '(单次点击)'
+            elif action_dic[custom_constant.click_type] == custom_constant.click_type_continuous:
+                click_type = '(持续点击)'
+            result['操作'] = '点击' + click_type
         result['坐标'] = (action_dic[custom_constant.action_x], action_dic[custom_constant.action_y])
         return result

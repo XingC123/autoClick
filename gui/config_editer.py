@@ -336,6 +336,14 @@ class ConfigEditer:
             gui.get_xy_window.GetXY(window, action_x_entry, action_y_entry)
 
         Button(action_attribute_frame, text='采集', command=get_xy).grid(row=0, column=5, padx=5)
+        click_type = StringVar()
+        click_type.set('once')
+        click_type_once_checkbox = Checkbutton(action_attribute_frame, text='单次点击',
+                                               variable=click_type, onvalue=custom_constant.click_type_once)
+        click_type_once_checkbox.grid(row=1, column=2, padx=5)
+        click_type_continuous_checkbox = Checkbutton(action_attribute_frame, text='持续点击(ESC退出点击)',
+                                                     variable=click_type, onvalue=custom_constant.click_type_continuous)
+        click_type_continuous_checkbox.grid(row=1, column=4, padx=5)
         # 要键入的内容 #
         input_content_frame = Frame(frame)
         input_content_frame.grid(row=2)
@@ -352,9 +360,10 @@ class ConfigEditer:
             action_type = action_type_value.get()
             curlength_action_list = len(self.click_object_copy[1][1])
             self.click_object_copy[1][1].append({custom_constant.action_mode: action_type,
-                                            custom_constant.action_x: action_x_entry.get(),
-                                            custom_constant.action_y: action_y_entry.get()
-                                            })
+                                                 custom_constant.action_x: action_x_entry.get(),
+                                                 custom_constant.action_y: action_y_entry.get(),
+                                                 custom_constant.click_type: click_type.get()
+                                                 })
             if action_type == custom_constant.input_action or action_type == custom_constant.open_webbroswer_action or \
                     action_type == custom_constant.open_file_action:
                 self.click_object_copy[1][1][curlength_action_list][custom_constant.input_content] = \
